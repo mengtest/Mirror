@@ -28,6 +28,28 @@ namespace Mirror.Tests.CommandAttrributeTest
         }
     }
 
+    class SenderConnectionBehaviour : NetworkBehaviour
+    {
+        public event Action<int, NetworkConnection> onSendInt;
+
+        [Command()]
+        public void CmdSendInt(int someInt, [SenderConnection] NetworkConnection conn = null)
+        {
+            onSendInt?.Invoke(someInt, conn);
+        }
+    }
+
+    class SenderConnectionIgnoreAuthorityBehaviour : NetworkBehaviour
+    {
+        public event Action<int, NetworkConnection> onSendInt;
+
+        [Command(ignoreAuthority = true)]
+        public void CmdSendInt(int someInt, [SenderConnection] NetworkConnection conn = null)
+        {
+            onSendInt?.Invoke(someInt, conn);
+        }
+    }
+
     public class CommandTest
     {
         private List<GameObject> spawned = new List<GameObject>();
@@ -177,6 +199,45 @@ namespace Mirror.Tests.CommandAttrributeTest
             {
                 callCount++;
                 Assert.That(incomingInt, Is.EqualTo(someInt));
+            };
+            hostBehaviour.CmdSendInt(someInt);
+            ProcessMessages();
+            Assert.That(callCount, Is.EqualTo(1));
+        }
+
+
+        [Test]
+        public void SenderConnectionIsSetWhenCommandIsRecieved()
+        {
+            SenderConnectionBehaviour hostBehaviour = CreateHostObject<SenderConnectionBehaviour>(true);
+
+            const int someInt = 20;
+
+            int callCount = 0;
+            hostBehaviour.onSendInt += (incomingInt, incomingConn) =>
+            {
+                callCount++;
+                Assert.That(incomingInt, Is.EqualTo(someInt));
+                Assert.That(incomingConn, Is.EqualTo(hostBehaviour.connectionToClient));
+            };
+            hostBehaviour.CmdSendInt(someInt);
+            ProcessMessages();
+            Assert.That(callCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SenderConnectionIsSetWhenCommandIsRecievedWithIgnoreAuthority()
+        {
+            SenderConnectionIgnoreAuthorityBehaviour hostBehaviour = CreateHostObject<SenderConnectionIgnoreAuthorityBehaviour>(false);
+
+            const int someInt = 20;
+
+            int callCount = 0;
+            hostBehaviour.onSendInt += (incomingInt, incomingConn) =>
+            {
+                callCount++;
+                Assert.That(incomingInt, Is.EqualTo(someInt));
+                Assert.That(incomingConn, Is.EqualTo(hostBehaviour.connectionToClient));
             };
             hostBehaviour.CmdSendInt(someInt);
             ProcessMessages();
