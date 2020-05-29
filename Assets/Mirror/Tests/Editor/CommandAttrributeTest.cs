@@ -113,6 +113,7 @@ namespace Mirror.Tests.CommandAttrributeTest
             if (spawnWithAuthority)
             {
                 NetworkServer.Spawn(gameObject, NetworkServer.localConnection);
+                Debug.Assert(behaviour.connectionToClient != null, $"Behaviour did not have connection to client, This means that the test is broken and will give the wrong results");
             }
             else
             {
@@ -121,7 +122,6 @@ namespace Mirror.Tests.CommandAttrributeTest
             ProcessMessages();
 
             Debug.Assert(behaviour.hasAuthority == spawnWithAuthority, $"Behaviour Had Wrong Authority when spawned, This means that the test is broken and will give the wrong results");
-            Debug.Assert(behaviour.connectionToClient != null, $"Behaviour did not have connection to client, This means that the test is broken and will give the wrong results");
 
             return behaviour;
         }
@@ -213,13 +213,16 @@ namespace Mirror.Tests.CommandAttrributeTest
             SenderConnectionBehaviour hostBehaviour = CreateHostObject<SenderConnectionBehaviour>(true);
 
             const int someInt = 20;
+            NetworkConnectionToClient connectionToClient = NetworkServer.connections[0];
+            Debug.Assert(connectionToClient != null, $"connectionToClient was null, This means that the test is broken and will give the wrong results");
+
 
             int callCount = 0;
             hostBehaviour.onSendInt += (incomingInt, incomingConn) =>
             {
                 callCount++;
                 Assert.That(incomingInt, Is.EqualTo(someInt));
-                Assert.That(incomingConn, Is.EqualTo(hostBehaviour.connectionToClient));
+                Assert.That(incomingConn, Is.EqualTo(connectionToClient));
             };
             hostBehaviour.CmdSendInt(someInt);
             ProcessMessages();
@@ -232,13 +235,15 @@ namespace Mirror.Tests.CommandAttrributeTest
             SenderConnectionIgnoreAuthorityBehaviour hostBehaviour = CreateHostObject<SenderConnectionIgnoreAuthorityBehaviour>(false);
 
             const int someInt = 20;
+            NetworkConnectionToClient connectionToClient = NetworkServer.connections[0];
+            Debug.Assert(connectionToClient != null, $"connectionToClient was null, This means that the test is broken and will give the wrong results");
 
             int callCount = 0;
             hostBehaviour.onSendInt += (incomingInt, incomingConn) =>
             {
                 callCount++;
                 Assert.That(incomingInt, Is.EqualTo(someInt));
-                Assert.That(incomingConn, Is.EqualTo(hostBehaviour.connectionToClient));
+                Assert.That(incomingConn, Is.EqualTo(connectionToClient));
             };
             hostBehaviour.CmdSendInt(someInt);
             ProcessMessages();
