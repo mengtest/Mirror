@@ -121,6 +121,7 @@ namespace Mirror.Tests.CommandAttrributeTest
             ProcessMessages();
 
             Debug.Assert(behaviour.hasAuthority == spawnWithAuthority, $"Behaviour Had Wrong Authority when spawned, This means that the test is broken and will give the wrong results");
+            Debug.Assert(behaviour.connectionToClient != null, $"Behaviour did not have connection to client, This means that the test is broken and will give the wrong results");
 
             return behaviour;
         }
