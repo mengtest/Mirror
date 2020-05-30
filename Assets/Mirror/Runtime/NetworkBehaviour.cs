@@ -429,7 +429,7 @@ namespace Mirror
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void RegisterCommandDelegate(Type invokeClass, string cmdName, CmdDelegate func, bool ignoreAuthority)
         {
-            RegisterDelegate(invokeClass, cmdName, MirrorInvokeType.ClientRpc, func, ignoreAuthority);
+            RegisterDelegate(invokeClass, cmdName, MirrorInvokeType.Command, func, ignoreAuthority);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
