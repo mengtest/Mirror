@@ -52,7 +52,7 @@ namespace Mirror.Tests
 
         // weaver generates this from [Command]
         // but for tests we need to add it manually
-        public static void RPCGenerated(NetworkBehaviour comp, NetworkReader reader)
+        public static void RPCGenerated(NetworkBehaviour comp, NetworkReader reader, NetworkConnection senderConnection)
         {
             ++((NetworkBehaviourSendRPCInternalComponent)comp).called;
         }
@@ -72,7 +72,7 @@ namespace Mirror.Tests
 
         // weaver generates this from [Command]
         // but for tests we need to add it manually
-        public static void TargetRPCGenerated(NetworkBehaviour comp, NetworkReader reader)
+        public static void TargetRPCGenerated(NetworkBehaviour comp, NetworkReader reader, NetworkConnection senderConnection)
         {
             ++((NetworkBehaviourSendTargetRPCInternalComponent)comp).called;
         }
@@ -92,7 +92,7 @@ namespace Mirror.Tests
 
         // weaver generates this from [Command]
         // but for tests we need to add it manually
-        public static void EventGenerated(NetworkBehaviour comp, NetworkReader reader)
+        public static void EventGenerated(NetworkBehaviour comp, NetworkReader reader, NetworkConnection senderConnection)
         {
             ++((NetworkBehaviourSendEventInternalComponent)comp).called;
         }
@@ -107,8 +107,8 @@ namespace Mirror.Tests
     // we need to inherit from networkbehaviour to test protected functions
     public class NetworkBehaviourDelegateComponent : NetworkBehaviour
     {
-        public static void Delegate(NetworkBehaviour comp, NetworkReader reader) { }
-        public static void Delegate2(NetworkBehaviour comp, NetworkReader reader) { }
+        public static void Delegate(NetworkBehaviour comp, NetworkReader reader, NetworkConnection senderConnection) { }
+        public static void Delegate2(NetworkBehaviour comp, NetworkReader reader, NetworkConnection senderConnection) { }
     }
 
     // we need to inherit from networkbehaviour to test protected functions
@@ -784,12 +784,12 @@ namespace Mirror.Tests
 
             // get handler
             int cmdHash = NetworkBehaviour.GetMethodHash(typeof(NetworkBehaviourDelegateComponent), nameof(NetworkBehaviourDelegateComponent.Delegate));
-            NetworkBehaviour.RemoteDelegate func = NetworkBehaviour.GetRemoteDelegate(cmdHash);
-            NetworkBehaviour.RemoteDelegate expected = NetworkBehaviourDelegateComponent.Delegate;
+            NetworkBehaviour.CmdDelegate func = NetworkBehaviour.GetRemoteDelegate(cmdHash);
+            NetworkBehaviour.CmdDelegate expected = NetworkBehaviourDelegateComponent.Delegate;
             Assert.That(func, Is.EqualTo(expected));
 
             // invalid hash should return null handler
-            NetworkBehaviour.RemoteDelegate funcNull = NetworkBehaviour.GetRemoteDelegate(1234);
+            NetworkBehaviour.CmdDelegate funcNull = NetworkBehaviour.GetRemoteDelegate(1234);
             Assert.That(funcNull, Is.Null);
 
             // clean up
